@@ -1,1 +1,1 @@
-{"StartTimeUtc":"2021-07-07T19:32:50.7996742Z","EndTimeUtc":"2021-07-07T19:32:52.1524860Z","Status":"Completed","Name":"Atualizar Plugins","Key":"PluginUpdates","Id":"c27fda37dfb6e39be141191aaa1c3060"}
+{"StartTimeUtc":"2021-07-10T12:36:37.4806500Z","EndTimeUtc":"2021-07-10T12:36:39.8865960Z","Status":"Completed","Name":"Atualizar Plugins","Key":"PluginUpdates","Id":"c27fda37dfb6e39be141191aaa1c3060"}
