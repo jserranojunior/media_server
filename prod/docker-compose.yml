@@ -1,8 +1,16 @@
-version: "2"
+version: "3.9"
 
 networks:
   internal:
     driver: bridge
+
+# volumes:
+#   dragon:
+#     driver: local
+#     driver_opts:
+#       type: nfs
+#       o: addr=192.168.15.5,id=1000,gid=1000,rw
+#       device: ":/mnt"
 
 services:
   jellyfin:
@@ -33,17 +41,17 @@ services:
       - traefik.http.routers.jelly.rule=Host(`jelly.alvitre.com.br`)
       - traefik.http.services.jelly.loadbalancer.server.port=8096
 
-  sickchill:
+  sick:
     image: ghcr.io/linuxserver/sickchill
-    container_name: sickchill
+    container_name: sick
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=Europe/London
     volumes:
-      - /net/dragon/mnt/RAID/iocage/files/media/sick:/config
-      - /net/dragon/mnt/RAID/iocage/files/media/dowloads:/downloads
-      - /net/dragon/mnt/RAID/iocage/files/media/sick:/tv
+      - /net/dragon/mnt/RAID/iocage/files/media/sick/config:/config
+      - /net/dragon/mnt/RAID/iocage/files/media/sick/dowloads:/downloads
+      - /net/dragon/mnt/RAID/iocage/files/media/sick/tv:/tv
     ports:
       - 8081:8081
     restart: unless-stopped
@@ -58,9 +66,33 @@ services:
       - WEBUI_PORT=8087
     volumes:
       - /net/dragon/mnt/RAID/iocage/files/sistemas/media_server/volumes/qbittorrent/config:/config
-      - /net/dragon/mnt/RAID/iocage/files/media/dowloads:/downloads
+      - /net/dragon/mnt/RAID/iocage/files/media/dowloads:/config/downloads/
     ports:
       - 6881:6881
       - 6881:6881/udp
       - 8087:8087
     restart: unless-stopped
+
+  nextcloud:
+    image: ghcr.io/linuxserver/nextcloud
+    restart: always
+    networks:
+      - internal
+    ports:
+      - 8444:80
+    volumes:
+      - /net/dragon/mnt/RAID/iocage/files/next:/data
+      - /net/dragon/mnt/RAID/iocage/files/nextconfig/nginx/site-confs:/config/nginx/site-confs
+    environment:
+      - PUID=1000
+      - PGID=1000
+      # - ADMIN_USERNAME=jorge
+      # - ADMIN_PASSWORD=@1Sondeminas
+      - MYSQL_PASSWORD=${PASS}
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=root
+      - MYSQL_HOST=mysql_${HOST}
+    labels:
+      - "traefik.enable=true"
+      - traefik.http.routers.nextcloud.rule=Host(`nextcloud.alvitre.com.br`)
+      - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
