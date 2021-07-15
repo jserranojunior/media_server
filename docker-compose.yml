@@ -71,25 +71,3 @@ services:
   #     - 6881:6881/udp
   #     - 8087:8087
   #   restart: unless-stopped
-
-  nextcloud:
-    image: ghcr.io/linuxserver/nextcloud
-    restart: always
-    networks:
-      - stack_ponte
-    ports:
-      - 8444:80
-    volumes:
-      - ${NUVEM}:/data
-      - ${VOLUMES}/nextcloud/config:/config
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - MYSQL_PASSWORD=${PASS}
-      - MYSQL_DATABASE=nextcloud
-      - MYSQL_USER=root
-      - MYSQL_HOST=mysql_${HOST}
-    labels:
-      - "traefik.enable=true"
-      - traefik.http.routers.nextcloud.rule=Host(`nextcloud.${DOMAIN}`)
-      - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
