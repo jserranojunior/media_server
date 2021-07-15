@@ -1,0 +1,95 @@
+version: "3.9"
+
+networks:
+  stack_ponte:
+    external: true
+
+# volumes:
+#   dragon:
+#     driver: local
+#     driver_opts:
+#       type: nfs
+#       o: addr=192.168.15.5,id=1000,gid=1000,rw
+#       device: ":/mnt"
+
+services:
+  jellyfin:
+    image: ghcr.io/linuxserver/jellyfin
+    container_name: jellyfin
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Sao_Paulo
+      - JELLYFIN_PublishedServerUrl=jelly.${DOMAIN} #optional
+    volumes:
+      - ${VOLUMES}/jellyfin/config:/config
+      - ${NUVEM}/jorge/files/Media/Series:/data/tvshows
+      - ${NUVEM}/jorge/files/Media/Filmes:/data/movies
+      - ${NUVEM}/jorge/files/Media/Musicas:/data/music
+      - ${NUVEM}/jorge/files/Media/Animes:/data/animes
+    ports:
+      - 8096:8096
+      - 8920:8920 #optional
+      - 7359:7359/udp #optional
+      - 1900:1900/udp #optional
+    networks:
+      - stack_ponte
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - traefik.http.routers.jelly.rule=Host(`jelly.${DOMAIN}`)
+      - traefik.http.services.jelly.loadbalancer.server.port=8096
+
+  # sick:
+  #   image: ghcr.io/linuxserver/sickchill
+  #   container_name: sick
+  #   environment:
+  #     - PUID=1000
+  #     - PGID=1000
+  #     - TZ=Europe/London
+  #   volumes:
+  #     - ${MEDIA}/sick/config:/config
+  #     - ${MEDIA}/sick/dowloads:/downloads
+  #     - ${MEDIA}/sick/tv:/tv
+  #   ports:
+  #     - 8081:8081
+  #   restart: unless-stopped
+
+  # qbittorrent:
+  #   image: ghcr.io/linuxserver/qbittorrent
+  #   container_name: qbittorrent
+  #   environment:
+  #     - PUID=1000
+  #     - PGID=1000
+  #     - TZ=America/Sao_Paulo
+  #     - WEBUI_PORT=8087
+  #   volumes:
+  #     - /net/dragon/mnt/RAID/iocage/files/sistemas/media_server/volumes/qbittorrent/config:/config
+  #     - ${MEDIA}/dowloads:/config/downloads/
+  #   ports:
+  #     - 6881:6881
+  #     - 6881:6881/udp
+  #     - 8087:8087
+  #   restart: unless-stopped
+
+  nextcloud:
+    image: ghcr.io/linuxserver/nextcloud
+    restart: always
+    networks:
+      - stack_ponte
+    ports:
+      - 8444:80
+    volumes:
+      - ${NUVEM}:/data
+      - ${VOLUMES}/nextcloud/config:/config
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - MYSQL_PASSWORD=${PASS}
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=root
+      - MYSQL_HOST=mysql_${HOST}
+    labels:
+      - "traefik.enable=true"
+      - traefik.http.routers.nextcloud.rule=Host(`nextcloud.${DOMAIN}`)
+      - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
