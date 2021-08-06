@@ -8,6 +8,7 @@ services:
   nextcloud:
     image: ghcr.io/linuxserver/nextcloud
     restart: always
+    user: 1000:1000
     networks:
       - stack_ponte
     ports:

@@ -23,10 +23,10 @@ services:
       - JELLYFIN_PublishedServerUrl=jelly.${DOMAIN} #optional
     volumes:
       - ${VOLUMES}/jellyfin/config:/config
-      - ${NUVEM}/jorge/files/Media/Series:/data/tvshows
-      - ${NUVEM}/jorge/files/Media/Filmes:/data/movies
-      - ${NUVEM}/jorge/files/Media/Musicas:/data/music
-      - ${NUVEM}/jorge/files/Media/Animes:/data/animes
+      - ${MEDIA}/Series:/data/tvshows
+      - ${MEDIA}/Filmes:/data/movies
+      - ${MEDIA}/Musicas:/data/music
+      - ${MEDIA}/Animes:/data/animes
     ports:
       - 8096:8096
       - 8920:8920 #optional
@@ -55,19 +55,34 @@ services:
   #     - 8081:8081
   #   restart: unless-stopped
 
-  # qbittorrent:
-  #   image: ghcr.io/linuxserver/qbittorrent
-  #   container_name: qbittorrent
-  #   environment:
-  #     - PUID=1000
-  #     - PGID=1000
-  #     - TZ=America/Sao_Paulo
-  #     - WEBUI_PORT=8087
-  #   volumes:
-  #     - /net/dragon/mnt/RAID/iocage/files/sistemas/media_server/volumes/qbittorrent/config:/config
-  #     - ${MEDIA}/dowloads:/config/downloads/
-  #   ports:
-  #     - 6881:6881
-  #     - 6881:6881/udp
-  #     - 8087:8087
-  #   restart: unless-stopped
+  medusa:
+    image: ghcr.io/linuxserver/medusa
+    container_name: medusa
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - ${VOLUMES}/medusa/config:/config
+      - ${MEDIA}/Dowloads:/downloads
+      - ${MEDIA}/Series:/tv
+    ports:
+      - 8051:8081
+    restart: unless-stopped
+
+  qbittorrent:
+    image: ghcr.io/linuxserver/qbittorrent
+    container_name: qbittorrent
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Sao_Paulo
+      - WEBUI_PORT=8087
+    volumes:
+      - ${VOLUMES}/qbittorrent/config:/config
+      - ${MEDIA}/Dowloads:/config/downloads/
+    ports:
+      - 6881:6881
+      - 6881:6881/udp
+      - 8087:8087
+    restart: unless-stopped
