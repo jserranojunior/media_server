@@ -66,5 +66,5 @@ services:
       UID: 1000
       GID: 1000
     volumes:
-      - "${FILES}/photoprism/originals:/photoprism/originals"
-      - "${FILES}/photoprism/storage:/photoprism/storage"
+      - "${PHOTOS}/originals:/photoprism/originals"
+      - "${PHOTOS}/storage:/photoprism/storage"
