@@ -39,7 +39,7 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=America/Sao_Paulo
-      - WEBUI_PORT=8080
+      - WEBUI_PORT=8091
     networks:
       - stack_ponte
     volumes:
@@ -48,12 +48,12 @@ services:
     ports:
       - 6881:6881
       - 6881:6881/udp
-      - 8091:8080
+      - 8091:8091
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
       - traefik.http.routers.qbittorrent.rule=Host(`qbittorrent.${DOMAIN}`)
-      - traefik.http.services.qbittorrent.loadbalancer.server.port=8080
+      - traefik.http.services.qbittorrent.loadbalancer.server.port=8091
 
   lidarr:
     image: ghcr.io/linuxserver/lidarr
