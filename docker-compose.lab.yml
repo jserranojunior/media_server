@@ -1,0 +1,68 @@
+version: "3.9"
+
+networks:
+  stack_ponte:
+    external: true
+
+services:
+  homeassistant:
+    image: ghcr.io/linuxserver/homeassistant
+    container_name: homeassistant
+    network_mode: host
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ}
+    volumes:
+      - ${VOLUMES}/homeassistant/config:/config
+    ports:
+      - 8123:8123 #optional
+    restart: unless-stopped
+
+  duplicati:
+    image: ghcr.io/linuxserver/duplicati
+    container_name: duplicati
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+      - CLI_ARGS= #optional
+    volumes:
+      - ${VOLUMES}/duplicati/config>:/config
+      - /home/alvitre/Developer/Pessoal/media_server/backup:/backups
+      - /home/alvitre/Developer/Pessoal/media_server/Media:/source
+    ports:
+      - 8200:8200
+    restart: unless-stopped
+
+  heimdall:
+    image: ghcr.io/linuxserver/heimdall
+    container_name: heimdall
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ}
+    volumes:
+      - ${VOLUMES}/heimdall/config:/config
+    networks:
+      - stack_ponte
+    ports:
+      - 980:80
+      - 9443:443
+    restart: unless-stopped
+
+  calibre-web:
+    image: ghcr.io/linuxserver/calibre-web
+    container_name: calibre-web
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ}
+      - DOCKER_MODS=linuxserver/calibre-web:calibre #optional
+      - OAUTHLIB_RELAX_TOKEN_SCOPE=1 #optional
+    volumes:
+      - ${VOLUMES}/calibre/config:/config
+      - ${MEDIA}/Books:/books
+    ports:
+      - 8083:8083
+    restart: unless-stopped

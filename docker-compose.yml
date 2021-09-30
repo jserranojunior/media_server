@@ -19,6 +19,7 @@ services:
       - ${MEDIA}/Filmes:/data/movies
       - ${MEDIA}/Musicas:/data/music
       - ${MEDIA}/Animes:/data/animes
+      - ${MEDIA}/Books:/data/books
     ports:
       - 8096:8096
       - 8920:8920 #optional
