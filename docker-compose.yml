@@ -15,11 +15,7 @@ services:
       - JELLYFIN_PublishedServerUrl=jelly.${DOMAIN} #optional
     volumes:
       - ${VOLUMES}/jellyfin/config:/config
-      - ${MEDIA}/Series:/data/tvshows
-      - ${MEDIA}/Filmes:/data/movies
-      - ${MEDIA}/Musicas:/data/music
-      - ${MEDIA}/Animes:/data/animes
-      - ${MEDIA}/Books:/data/books
+      - ${MEDIA}:/data
     ports:
       - 8096:8096
       - 8920:8920 #optional
@@ -33,82 +29,25 @@ services:
       - traefik.http.routers.jelly.rule=Host(`jelly.${DOMAIN}`)
       - traefik.http.services.jelly.loadbalancer.server.port=8096
 
-  # qbittorrent:
-  #   image: ghcr.io/linuxserver/qbittorrent
-  #   container_name: qbittorrent
-  #   environment:
-  #     - PUID=1000
-  #     - PGID=1000
-  #     - TZ=America/Sao_Paulo
-  #     - WEBUI_PORT=8091
-  #   networks:
-  #     - stack_ponte
-  #   volumes:
-  #     - ${VOLUMES}/qbittorrent/config:/config
-  #     - ${MEDIA}/Dowloads:/downloads/
-  #   ports:
-  #     - 6881:6881
-  #     - 6881:6881/udp
-  #     - 8091:8091
-  #   restart: unless-stopped
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - traefik.http.routers.qbittorrent.rule=Host(`qbittorrent.${DOMAIN}`)
-  #     - traefik.http.services.qbittorrent.loadbalancer.server.port=8091
-
-  # lidarr:
-  #   image: ghcr.io/linuxserver/lidarr
-  #   container_name: lidarr
-  #   environment:
-  #     - PUID=1000
-  #     - PGID=1000
-  #     - TZ=Europe/London
-  #   volumes:
-  #     - ${VOLUMES}/lidarr/config:/config
-  #     - ${MEDIA}/Musicas:/music #optional
-  #     - ${MEDIA}/Dowloads:/downloads #optional
-  #   networks:
-  #     - stack_ponte
-  #   ports:
-  #     - 8686:8686
-  #   restart: unless-stopped
-
-  # medusa:
-  #   image: ghcr.io/linuxserver/medusa
-  #   container_name: medusa
-  #   environment:
-  #     - PUID=1000
-  #     - PGID=1000
-  #     - TZ=Europe/London
-  #   networks:
-  #     - stack_ponte
-  #   volumes:
-  #     - ${VOLUMES}/medusa/config:/config
-  #     - ${MEDIA}/Dowloads:/downloads
-  #     - ${MEDIA}/Series:/tv
-  #   ports:
-  #     - 8051:8081
-  #   restart: unless-stopped
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - traefik.http.routers.medussa.rule=Host(`medussa.${DOMAIN}`)
-  #     - traefik.http.services.medussa.loadbalancer.server.port=8051
-
-  # jackett:
-  #   image: ghcr.io/linuxserver/jackett
-  #   container_name: jackett
-  #   networks:
-  #     - stack_ponte
-  #   environment:
-  #     - PUID=1000
-  #     - PGID=1000
-  #     - TZ=Europe/London
-  #     - AUTO_UPDATE=true #optional
-  #     - RUN_OPTS=<run options here> #optional
-
-  #   volumes:
-  #     - ${VOLUMES}/jackett/config:/config
-  #     - ${MEDIA}/Dowloads:/downloads
-  #   ports:
-  #     - 9117:9117
-  #   restart: unless-stopped
+  qbittorrent:
+    image: ghcr.io/linuxserver/qbittorrent
+    container_name: qbittorrent
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ}
+      - WEBUI_PORT=8091
+    networks:
+      - stack_ponte
+    volumes:
+      - ${VOLUMES}/qbittorrent/config:/config
+      - ${MEDIA}/Dowloads:/downloads/
+    ports:
+      - 6881:6881
+      - 6881:6881/udp
+      - 8091:8091
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - traefik.http.routers.qbt.rule=Host(`qbt.${DOMAIN}`)
+      - traefik.http.services.qbt.loadbalancer.server.port=8091
