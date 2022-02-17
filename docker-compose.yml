@@ -6,48 +6,47 @@ networks:
 
 services:
   jellyfin:
-    image: ghcr.io/linuxserver/jellyfin
+    image: jellyfin/jellyfin
     container_name: jellyfin
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=America/Sao_Paulo
-      - JELLYFIN_PublishedServerUrl=jelly.${DOMAIN} #optional
-    volumes:
-      - ${VOLUMES}/jellyfin/config:/config
-      - ${MEDIA}:/data
-    ports:
-      - 8096:8096
-      - 8920:8920 #optional
-      - 7359:7359/udp #optional
-      - 1900:1900/udp #optional
+    user: 1000:1000
     networks:
       - stack_ponte
-    restart: unless-stopped
+    ports:
+      - 8097:8096
+    volumes:
+      - ${VOLUMES}/newjellyfin/config:/config
+      - ${MEDIA}:/media
+    restart: "unless-stopped"
     labels:
       - "traefik.enable=true"
       - traefik.http.routers.jelly.rule=Host(`jelly.${DOMAIN}`)
       - traefik.http.services.jelly.loadbalancer.server.port=8096
+      - JELLYFIN_PublishedServerUrl=https://jelly.${DOMAIN}
+      - "traefik.http.routers.jelly.tls.certresolver=le"
 
-  qbittorrent:
-    image: ghcr.io/linuxserver/qbittorrent
-    container_name: qbittorrent
+  transmission:
+    image: lscr.io/linuxserver/transmission
+    container_name: transmission
+    networks:
+      - stack_ponte
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=${TZ}
-      - WEBUI_PORT=8091
-    networks:
-      - stack_ponte
+      - TRANSMISSION_WEB_HOME=/combustion-release/ #optional
+      - USER=${USER} #optional
+      - PASS=${PW} #optional
     volumes:
-      - ${VOLUMES}/qbittorrent/config:/config
-      - ${MEDIA}/Dowloads:/downloads/
+      - ${VOLUMES}/transmission/config:/config
+      - ${MEDIA}/Dowloads:/downloads
+      - ${MEDIA}/Watch:/watch
     ports:
-      - 6881:6881
-      - 6881:6881/udp
-      - 8091:8091
+      - 9092:9091
+      - 51414:51413
+      - 51414:51413/udp
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
       - traefik.http.routers.qbt.rule=Host(`qbt.${DOMAIN}`)
-      - traefik.http.services.qbt.loadbalancer.server.port=8091
+      - traefik.http.services.qbt.loadbalancer.server.port=9091
+      - "traefik.http.routers.qbt.tls.certresolver=le"
