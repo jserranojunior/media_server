@@ -5,6 +5,43 @@ networks:
     external: true
 
 services:
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ}
+    volumes:
+      - ${VOLUMES}/sonarr:/config
+      - ${MEDIA}/Series:/tv
+      - ${MEDIA}/Dowloads:/downloads
+    ports:
+      - 8989:8989
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - traefik.http.routers.sonarr.rule=Host(`sonarr.${DOMAIN}`)
+      - traefik.http.services.sonarr.loadbalancer.server.port=8989
+
+  jackett:
+    image: lscr.io/linuxserver/prowlarr:develop
+    container_name: prowlarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ}
+    volumes:
+      - ${VOLUMES}/prowlarr:/config
+    ports:
+      - 9696:9696
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - traefik.http.routers.jackett.rule=Host(`jackett.${DOMAIN}`)
+      - traefik.http.services.jackett.loadbalancer.server.port=9696
+
   jellyfin:
     image: jellyfin/jellyfin
     container_name: jellyfin
@@ -14,7 +51,7 @@ services:
     ports:
       - 8097:8096
     volumes:
-      - ${VOLUMES}/newjellyfin/config:/config
+      - ${VOLUMES}/jellyfin/config:/config
       - ${MEDIA}:/media
     restart: "unless-stopped"
     labels:
@@ -22,7 +59,6 @@ services:
       - traefik.http.routers.jelly.rule=Host(`jelly.${DOMAIN}`)
       - traefik.http.services.jelly.loadbalancer.server.port=8096
       - JELLYFIN_PublishedServerUrl=https://jelly.${DOMAIN}
-      - "traefik.http.routers.jelly.tls.certresolver=le"
 
   transmission:
     image: lscr.io/linuxserver/transmission
@@ -49,4 +85,3 @@ services:
       - "traefik.enable=true"
       - traefik.http.routers.qbt.rule=Host(`qbt.${DOMAIN}`)
       - traefik.http.services.qbt.loadbalancer.server.port=9091
-      - "traefik.http.routers.qbt.tls.certresolver=le"
