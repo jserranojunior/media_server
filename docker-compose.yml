@@ -5,42 +5,27 @@ networks:
     external: true
 
 services:
-
-  sonarr:
-    image: lscr.io/linuxserver/sonarr:latest
-    container_name: sonarr
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=${TZ}
-    volumes:
-      - ${VOLUMES}/sonarr:/config
-      - ${MEDIA}/Series:/tv
-      - ${MEDIA}/Dowloads:/downloads
+  nextcloud:
+    container_name: nextcloud
+    image: nextcloud
+    restart: always
+    networks:
+      - stack_ponte
     ports:
-      - 8989:8989
-    restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      - traefik.http.routers.sonarr.rule=Host(`sonarr.${DOMAIN}`)
-      - traefik.http.services.sonarr.loadbalancer.server.port=8989
-
-  jackett:
-    image: lscr.io/linuxserver/prowlarr:develop
-    container_name: prowlarr
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=${TZ}
+      - 8029:80
+    user: 100:100
     volumes:
-      - ${VOLUMES}/prowlarr:/config
-    ports:
-      - 9696:9696
-    restart: unless-stopped
+      - ${NUVEM}/officialnextcloud:/var/www/html/data
+      - ${VOLUMES}/officialnextcloud:/var/www/html
+    environment:
+      - MYSQL_PASSWORD=${DBPASS}
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=root
+      - MYSQL_HOST=${DATABASE}
     labels:
-      - "traefik.enable=true"
-      - traefik.http.routers.jackett.rule=Host(`jackett.${DOMAIN}`)
-      - traefik.http.services.jackett.loadbalancer.server.port=9696
+      - traefik.enable=true
+      - traefik.http.routers.nextcloud.rule=Host(`nextcloud.${DOMAIN}`)
+      - traefik.http.services.nextcloud.loadbalancer.server.port=80
 
   jellyfin:
     image: jellyfin/jellyfin
