@@ -1,0 +1,26 @@
+version: "3"
+
+networks:
+  pihole:
+    name: pihole
+
+services:
+  pihole:
+    image: pihole/pihole:latest
+    container_name: pihole
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
+    networks:
+     - pihole
+    environment:
+      WEBPASSWORD: ${PW}
+    ports:
+      - "9753:53/tcp"
+      - "9753:53/udp"
+      - "9767:67/udp"
+      - "9780:80/tcp"
+    volumes:
+      - ${VOLUMES}/pihole/etc-pihole:/etc/pihole
+      - ${VOLUMES}/pihole/etc-dnsmasq.d:/etc/dnsmasq.d    
+      

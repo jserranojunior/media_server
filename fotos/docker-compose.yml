@@ -1,145 +1,29 @@
-version: "3.9"
+version: "3"
 
 networks:
-  MYmacvlan:
-    external:
-      name: MYmacvlan
-      
   stack_ponte:
     external: true
 
 services:
-  nextcloud:
-    container_name: nextcloud
-    image: nextcloud
-    restart: always
-    networks:
-      - stack_ponte
-    ports:
-      - 8029:80
-    user: 1000:100
-    volumes:
-      - ${NUVEM}:/var/www/html/data
-      - ${VOLUMES}/nextcloud:/var/www/html
-    environment:
-      - MYSQL_PASSWORD=${DBPASS}
-      - MYSQL_DATABASE=nextcloud
-      - MYSQL_USER=root
-      - MYSQL_HOST=${DATABASE}
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.nextcloud.rule=Host(`nextcloud.${DOMAIN}`)
-      - traefik.http.services.nextcloud.loadbalancer.server.port=80
-      - "traefik.http.routers.nextcloud.tls.certresolver=le"
-      
-  jellyfin:
-     image: jellyfin/jellyfin
-     container_name: jellyfin
-     user: 1000:100
-     networks:
-       - stack_ponte
-     ports:
-       - 8097:8096
-     volumes:
-       - ${VOLUMES}/jellyfin:/config
-       - ${ENTRETENIMENTO}:/media
-     restart: "unless-stopped"
-     labels:
-       - "traefik.enable=true"
-       - traefik.http.routers.jelly.rule=Host(`jelly.${DOMAIN}`)
-       - traefik.http.services.jelly.loadbalancer.server.port=8096
-       - JELLYFIN_PublishedServerUrl=https://jelly.${DOMAIN}
-       - "traefik.http.routers.jelly.tls.certresolver=le"
-       
-  transmission:
-     image: linuxserver/transmission
-     container_name: transmission
-     networks:
-       - stack_ponte
-     environment:
-       - PUID=1000
-       - PGID=100
-       - TZ=${TZ}
-       - TRANSMISSION_WEB_HOME=/combustion-release/
-       - USER=${USER}
-       - PASS=${PW}
-     volumes:
-       - ${VOLUMES}/transmission:/config
-       - ${MEDIAS}/Downloads:/downloads
-     ports:
-       - 9092:9091
-       - 51414:51413
-       - 51414:51413/udp
-     restart: unless-stopped
-     labels:
-       - "traefik.enable=true"
-       - traefik.http.routers.qbt.rule=Host(`qbt.${DOMAIN}`)
-       - traefik.http.services.qbt.loadbalancer.server.port=9091
-       - "traefik.http.routers.qbt.tls.certresolver=le"
 
-  openhab:
-    image: "openhab/openhab"
+  photoview:
+    image: viktorstrate/photoview:2
+    container_name: photoview
     restart: always
-    networks:
-      - stack_ponte
-    container_name: openhab
-    volumes:
-      - "/etc/localtime:/etc/localtime:ro"
-      - "/etc/timezone:/etc/timezone:ro"
-      - "${VOLUMES}/openhab/openhab_addons:/openhab/addons"
-      - "${VOLUMES}/openhab/openhab_conf:/openhab/conf"
-      - "${VOLUMES}/openhab/openhab_userdata:/openhab/userdata"
     ports:
-      - 8087:8080
-      - 8107:8101
-      - 5007:5007
-    environment:
-      CRYPTO_POLICY: "unlimited"
-      EXTRA_JAVA_OPTS: "-Duser.timezone=${TZ}"
-      USER_ID: "1000"
-      GROUP_ID: "100"
-    labels:
-      - "traefik.enable=true"
-      - traefik.http.routers.home.rule=Host(`home.${DOMAIN}`)
-      - traefik.http.services.home.loadbalancer.server.port=8080
-      - "traefik.http.routers.home.tls.certresolver=le"
-      
-  trilium:
-    image: zadam/trilium
-    container_name: trilium
-    restart: always
+      - "8035:80"
     networks:
       - stack_ponte
     volumes:
-      - ${VOLUMES}/trilium:/home/node/trilium-data
-    ports:
-      - 5801:8080
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.trilium.rule=Host(`trilium.${DOMAIN}`)
-      - traefik.http.services.trilium.loadbalancer.server.port=8080
-      - traefik.http.routers.trilium.tls.certresolver=le
-      
-      
-  pihole:
-    image: pihole/pihole:latest
-    container_name: pihole
-    cap_add:
-      - NET_ADMIN
-    restart: unless-stopped
-    networks:
-     - MYmacvlan
+      - "${FILES}/.not_graph/.n/.x/Passwd:/photos"
     environment:
-      WEBPASSWORD: ${PW}
-    ports:
-      - "9753:53/tcp"
-      - "9753:53/udp"
-      - "9767:67/udp"
-      - "9780:80/tcp"
-    volumes:
-      - './etc-pihole:/etc/pihole'
-      - './etc-dnsmasq.d:/etc/dnsmasq.d'
-      
+      - PHOTOVIEW_DATABASE_DRIVER=mysql
+      - "PHOTOVIEW_MYSQL_URL=root:${DBPASS}@tcp(${DATABASE})/photoview"
+      - PHOTOVIEW_LISTEN_IP=photoview
+      - PHOTOVIEW_LISTEN_PORT=80
+      - PHOTOVIEW_MEDIA_CACHE=/app/cache
+
+    
   photoprism:
     image: photoprism/photoprism:latest
     container_name: photoprism

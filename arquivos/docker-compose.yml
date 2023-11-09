@@ -1,0 +1,26 @@
+version: "3"
+
+networks: 
+  stack_ponte:
+    external: true
+
+services:
+  nextcloud:
+    container_name: nextcloud
+    image: nextcloud
+    restart: always
+    networks:
+      - stack_ponte
+    ports:
+      - 8029:80
+    user: 1000:100
+    volumes:
+      - ${NUVEM}:/var/www/html/data
+      - ${VOLUMES}/nextcloud:/var/www/html/config
+      #- ${VOLUMES}/nextcloud:/var/www/html/data
+    environment:
+      - MYSQL_PASSWORD=${DBPASS}
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=root
+      - MYSQL_HOST=${DATABASE}
+      

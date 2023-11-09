@@ -1,0 +1,19 @@
+version: "3"
+
+networks:
+  stack_ponte:
+    external: true
+
+services:
+
+  trilium:
+    image: zadam/trilium
+    container_name: trilium
+    restart: always
+    networks:
+      - stack_ponte
+    volumes:
+      - ${VOLUMES}/trilium:/home/node/trilium-data
+    ports:
+      - 5801:8080
+
